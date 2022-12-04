@@ -28,7 +28,7 @@ module.exports = {
                 city_id SERIAL PRIMARY KEY,
                 name varchar(50),
                 rating integer,
-                country_id integer
+                country_id integer NOT NULL references countries(country_id)
             );
 
             insert into countries (name)
@@ -242,26 +242,33 @@ module.exports = {
     },
 
     createCity: (req, res) => {
-        let{name, rating, countryId} = req.dody
-
+    const{name, rating, countryId} = req.body
+       
         sequelize.query(`
-        UPDATE city
-        SET name = '${name}',
-        rating = ${rating},
-        where country_id = ${countryId};
+        INSERT INTO cities (name, rating, country_Id)
+        VALUES('${name}',${rating},${countryId})
         `)
-        then(dbRes => res.status(200).send(dbRes[0]))
+        .then(dbRes => res.status(200).send(dbRes[0]))
         .catch(err => console.log(err))
     },
 
-    // getCities: (req,res) => {
-    //     sequelize.query(`SELECT * FROM cities AS C
-    //     JOIN countries AS co
-    //     on c.countries_id = co.countries_id;
+    getCities: (req,res) => {
+        sequelize.query(`SELECT ci.city_id, ci.name AS city, ci.rating, co.country_id, co.name AS country
+        from cities AS ci
+        JOIN countries AS co
+        ON ci.country_id = co.country_id;
         
-    //     `)
-    //     then(dbRes => res.status(200).send(dbRes[0]))
-    //     .catch(err => console.log(err))
+        `)
+        .then(dbRes => res.status(200).send(dbRes[0]))
+        .catch(err => console.log(err))
 
-    // }
+    },
+
+    deleteCity: (req, res) => {
+        //const{id} = req.perams;
+        sequelize.query(`DELETE FROM cities 
+        WHERE city_id = ${id};`)
+        .then(dbRes => res.status(200).send(dbRes[0]))
+        .catch(err => console.log(err))
+    }
 }
